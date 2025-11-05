@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Automation;
@@ -12,24 +13,73 @@ namespace SharpE2e.Core
 {
     public class ElementWrapper
     {
-        private AutomationElement _element;
+        private const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
+        private const uint MOUSEEVENTF_LEFTUP = 0x0004;
+
+        public string Name => this._element.Current.Name;
+
+        public string ClassName => this._element.Current.ClassName;
+
+        public bool IsEnabled => this._element.Current.IsEnabled;
+
+        protected Rect BoundingRect => this._element.Current.BoundingRectangle;
+
+        protected bool IsOffscreen => this._element.Current.IsOffscreen;
+
+        internal readonly AutomationElement _element;
 
         public ElementWrapper(AutomationElement element)
         {
-            _element = element;
+            this._element = element;
         }
 
         public void Click()
         {
-            if (_element.TryGetCurrentPattern(InvokePattern.Pattern, out object pattern))
-            {
-                ((InvokePattern)pattern).Invoke();
-            }
+            this.SetFocus();
+
+            this.Click((int)this.BoundingRect.Width / 2, (int)this.BoundingRect.Height / 2);
         }
 
-        public string GetText()
+        public void Click(int x, int y)
         {
-            return _element.Current.Name;
+            if (this.BoundingRect.IsEmpty)
+            {
+                throw new InvalidOperationException("The element's bounding rectangle is empty. Cannot perform a click.");
+            }
+            else if (!this.IsEnabled)
+            {
+                throw new InvalidOperationException("The element isn't enabled. Cannot perform a click.");
+            }
+            else if (this.IsOffscreen)
+            {
+                throw new InvalidOperationException("The element is Offscreen. Cannot perform a click.");
+            }
+
+            x = (int)this.BoundingRect.Left + x;
+            y = (int)this.BoundingRect.Top + y;
+
+            SetCursorPos(x, y);
+            MouseClick();
+        }
+
+        public void SetFocus()
+        {
+            this._element.SetFocus();
+        }
+
+        // P/Invoke for setting the cursor position
+        [DllImport("user32.dll")]
+        private static extern bool SetCursorPos(int x, int y);
+
+        // P/Invoke for simulating mouse events
+        [DllImport("user32.dll")]
+        private static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData, UIntPtr dwExtraInfo);
+
+
+        private void MouseClick()
+        {
+            mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, UIntPtr.Zero);
+            mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, UIntPtr.Zero);
         }
     }
 }
