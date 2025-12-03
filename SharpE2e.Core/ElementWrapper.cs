@@ -59,6 +59,12 @@ namespace SharpE2e.Core
             this._element.SetFocus();
         }
 
+        public void Keys(string text)
+        {
+            //this.SetFocus();
+            Keyboard.SendText(text);
+        }
+
 
         private void MouseClick()
         {

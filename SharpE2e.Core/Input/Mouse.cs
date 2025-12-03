@@ -3,7 +3,7 @@ using SharpE2e.Core.Enum;
 
 namespace SharpE2e.Core.Input
 {
-    internal class Mouse
+    internal static class Mouse
     {
         // P/Invoke for setting the cursor position
         [DllImport("user32.dll")]

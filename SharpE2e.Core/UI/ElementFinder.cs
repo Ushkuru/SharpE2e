@@ -14,6 +14,13 @@ namespace SharpE2e.Core.UI
             //return new ElementWrapper(element);
         }
 
+        public static AutomationElement FindFirstFocusedElement()
+        {
+            var elements = AutomationElement.FocusedElement.FindAll(TreeScope.Element, new PropertyCondition(AutomationElement.IsControlElementProperty, true));
+
+            return elements[0];
+        }
+
         public static ElementWrapper FindElementByAutomationId(AutomationElement parent, string automationId)
         {
             var element = parent.FindFirst(
@@ -34,6 +41,21 @@ namespace SharpE2e.Core.UI
             var element = parent.FindFirst(
                 TreeScope.Subtree,
                 new PropertyCondition(AutomationElement.NameProperty, name)
+            );
+
+            if (element == null)
+            {
+                throw new InvalidOperationException($"Element not found.");
+            }
+
+            return new ElementWrapper(element);
+        }
+
+        public static ElementWrapper FindElementByClassName(AutomationElement parent, string name)
+        {
+            var element = parent.FindFirst(
+                TreeScope.Subtree,
+                new PropertyCondition(AutomationElement.ClassNameProperty, name)
             );
 
             if (element == null)
