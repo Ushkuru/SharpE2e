@@ -1,20 +1,12 @@
-﻿using System.Net;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Automation;
-using System.Windows.Shapes;
-using System.Xml.Linq;
-using SharpE2e.Core;
-using SharpE2e.Core.Fw;
-using SharpE2e.Core.UI;
+using SharpE2e.Core.Enum;
+using SharpE2e.Core.Input;
 
 namespace SharpE2e.Core
 {
     public class ElementWrapper
     {
-        private const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
-        private const uint MOUSEEVENTF_LEFTUP = 0x0004;
 
         public string Name => this._element.Current.Name;
 
@@ -58,8 +50,8 @@ namespace SharpE2e.Core
             x = (int)this.BoundingRect.Left + x;
             y = (int)this.BoundingRect.Top + y;
 
-            SetCursorPos(x, y);
-            MouseClick();
+            Mouse.SetCursorPosition(x, y);
+            this.MouseClick();
         }
 
         public void SetFocus()
@@ -67,19 +59,11 @@ namespace SharpE2e.Core
             this._element.SetFocus();
         }
 
-        // P/Invoke for setting the cursor position
-        [DllImport("user32.dll")]
-        private static extern bool SetCursorPos(int x, int y);
-
-        // P/Invoke for simulating mouse events
-        [DllImport("user32.dll")]
-        private static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData, UIntPtr dwExtraInfo);
-
 
         private void MouseClick()
         {
-            mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, UIntPtr.Zero);
-            mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, UIntPtr.Zero);
+            Mouse.MouseEvent(MouseEvent.LeftDown);
+            Mouse.MouseEvent(MouseEvent.LeftUp);
         }
     }
 }
